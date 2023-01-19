@@ -90,3 +90,22 @@ else
     argument=${1:3}
 
     case $option in
+    "-z")
+            display_output $argument
+            ;;
+        "-s")
+            # Search for files containing the specified string
+            files=$(ls /bin | grep -i $argument)
+            if [ -z "$files" ]; then
+                echo "No matches found"
+                exit 0
+            fi
+            for file in $files; do
+                size=$(stat -c%s "/bin/$file")
+                printf "%-20s %10d\n" $file $size
+            done
+            ;;
+        "-b")
+            ;;
+    esac
+fi
