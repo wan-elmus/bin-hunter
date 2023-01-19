@@ -63,4 +63,27 @@ if [[ ! -z $operator_bytes ]]; then
     GT) listing=$(echo "$listing" | awk '$5 > '$bytes'') ;;
     LT) listing=$(echo "$listing" | awk '$5 < '$bytes'') ;;
     LE) listing=$(echo "$listing" | awk '$5 <= '$bytes'') ;;
-    GE) listing=$(
+    GE) listing=$(echo "$listing" | awk '$5 >= '$bytes'') ;;
+    EQ) listing=$(echo "$listing" | awk '$5 == '$bytes'') ;;
+    NE) listing=$(echo "$listing" | awk '$5 != '$bytes'') ;;
+esac
+fi
+
+Sort listing based on order type
+if [[ ! -z $order_type ]]; then
+case $order_type in
+ASC) listing=$(echo "$listing" | sort -k5,5n) ;;
+DSC) listing=$(echo "$listing" | sort -k5,5nr) ;;
+SHL) listing=$(echo "$listing" | sort -k9) ;;
+SLH) listing=$(echo "$listing" | sort -k9r) ;;
+esac
+fi
+
+Print final listing
+echo "$listing"
+
+Exit successfully
+exit 0
+
+
+
