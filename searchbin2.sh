@@ -102,3 +102,7 @@ files=$(ls /bin | grep -i $argument)
 if [ -z "$files" ]; then
 echo "No matches found"
 exit 0
+fi
+for file in $files; do
+size=$(stat -c%s "/bin/$file")
+printf "%-20
