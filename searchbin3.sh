@@ -8,7 +8,9 @@ if [[ $1 == "-z" ]]; then
 if [[ $2 == "ASC" || $2 == "DSC" || $2 == "SHL" || $2 == "SLH" ]]; then
 return 0
 else
+tput setaf 1
 echo "Invalid argument passed for option -z. Exiting..."
+tput sgr0
 exit 1
 fi
 elif [[ $1 == "-s" ]]; then
