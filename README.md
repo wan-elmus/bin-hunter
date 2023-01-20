@@ -1,15 +1,34 @@
+![alt text](img/binhunt.PNG)
+
+
 # Search and sort commands and utilities located in /bin directory
+<Student_name_and_number_are_included_because_it_was_one_of_the_requirements_for_the_script_have_tried_as_much_as_possible_to__mplement_everything_the_requirements_demand>
 
-Script starts by defining the validate_input() function, which checks if the number of arguments passed is greater than 2 and exits if true. It then checks the option flag passed and validates the value passed accordingly.
+This bash script takes in two input arguments. The first argument is an option and the second argument is an argument. The script first validates the input arguments to ensure that the correct number of arguments are provided, and that the option and argument are valid. If the arguments are invalid, the script exits. If the arguments are valid, the script performs different actions depending on the option provided. 
+The options are:
 
-If the option flag is -z, it checks if the value passed is one of the four valid order types (ASC, DSC, SHL, SLH).
-If the option flag is -s, it checks if the value passed is a non-empty string.
-If the option flag is -b, it checks if the value passed is in the format of operator,bytes where operator is one of the six valid comparison operators (GT, LT, LE, GE, EQ, NE) and bytes is a number.
-The script then defines the search_sort_binaries() function, which performs different actions based on the option flag passed.
+"-z": sorts and displays the binary files in the /bin directory based on the argument provided (ASC, DSC, SHL, or SLH) and shows the name and size of the files in a columnar format.
 
-If the option flag is -z, it sorts the files in the /bin directory in the specified order.
-If the option flag is -s, it searches for files in the /bin directory that contain the specified string and prints them out.
-If the option flag is -b, it searches for files in the /bin directory that have a file size that matches the specified comparison and value.
-The script then defines the main() function which calls the validate_input() and search_sort_binaries() functions with the arguments passed.
+"-s": searches for and displays the binary files in the /bin directory that match the argument provided (case-insensitive) and shows the name and size of the files in a columnar format.
 
-Finally, the script calls the main() function with the passed arguments. The script can be executed by running it in the terminal and passing the appropriate arguments and options.
+"-b": filters and displays the binary files in the /bin directory based on the size argument provided (in bytes) and shows the name and size of the files in a columnar format.
+
+If no arguments are provided, it simply lists the files in the /bin directory.
+
+If invalid arguments are provided, it displays an error message and exits.
+
+## How to run the Script with different arguments
+
+*Sorting in ascending order: "./scriptname.sh -z ASC" or "bash scriptname.sh -z ASC"*
+
+*Sorting in descending order: "./scriptname.sh -z DSC" or "bash scriptname.sh -z DSC"*
+
+*Sorting by size in descending order: "./scriptname.sh -z SHL" or "bash scriptname.sh -z SHL"*
+
+*Sorting by size in ascending order: "./scriptname.sh -z SLH" or "bash scriptname.sh -z SLH"*
+
+*Searching for files containing a specific string: "./scriptname.sh -s <string>" or "bash scriptname.sh -s <string>"*
+
+*Sorting by file size based on a specific operator and bytes: "./scriptname.sh -b <operator,bytes>" or "bash scriptname.sh -b <operator,bytes>"*
+
+*Displaying the full listing of /bin directory: "./scriptname.sh" or "bash scriptname.sh"*
