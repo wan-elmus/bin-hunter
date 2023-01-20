@@ -17,25 +17,33 @@ elif [[ $1 == "-s" ]]; then
 if [[ -n $2 ]]; then
 return 0
 else
+tput setaf 1
 echo "No argument passed for option -s. Exiting..."
+tput sgr0
 exit 1
 fi
 elif [[ $1 == "-b" ]]; then
 if [[ $2 =~ ^(GT|LT|LE|GE|EQ|NE),[0-9]+$ ]]; then
 return 0
 else
+tput setaf 1
 echo "Invalid argument passed for option -b. Exiting..."
+tput sgr0
 exit 1
 fi
 else
+tput setaf 1
 echo "Invalid option passed. Exiting..."
+tput sgr0
 exit 1
 fi
 }
 
 #Check if only one option/argument is provided
-if [[ $# -ne 2 ]]; then
-echo "Please provide only one option and its argument. Exiting..."
+if [ $# -gt 2 ]; then
+tput setaf 1
+echo "Please provide only one option/argument at a time. Exiting..."
+tput sgr0
 exit 1
 fi
 
@@ -87,16 +95,18 @@ fi
 done
 binaries=$sorted_binaries
 if [[ -z $binaries ]]; then
+tput setaf 1
 echo "No matches found"
+tput sgr0
 exit 1
 fi
 fi
 
 #Print results in columnar format
-printf "%-20s %-10s\n" "Binary" "Size (bytes)"
+printf "%-20s %-10d\n" "Binary" "Size (bytes)"
 for binary in $binaries; do
 binary_size=$(ls -s /bin/$binary | cut -f1 -d' ')
-printf "%-20s %-10s\n" "$binary" "$binary_size"
+printf "%-20s %-10d\n" "$binary" "$binary_size"
 done
 
 #Exit script

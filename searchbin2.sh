@@ -6,7 +6,7 @@
 validate_args() {
 
 #Check if only one argument is provided
-if [ $# -ne 1 ]; then
+if [ $# -gt 2 ]; then
 echo "Please provide only one option/argument at a time. Exiting..."
 exit 1
 fi
@@ -105,4 +105,10 @@ exit 0
 fi
 for file in $files; do
 size=$(stat -c%s "/bin/$file")
-printf "%-20
+printf "%-20 %10d\n" $file $size
+done
+            ;;
+        "-b")
+            ;;
+    esac
+fi
