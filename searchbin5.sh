@@ -9,7 +9,7 @@ validate_args() {
 #Check if the correct number of arguments are provided
     if [ $# -ne 2 ]; then
         tput setaf 1
-        echo "Please provide two arguments: option and argument. Exiting..."
+        echo "Invalid flag or missing argument error - exiting.."
         tput sgr0
     exit 1
     fi
@@ -21,7 +21,7 @@ validate_args() {
     case $option in
     # Validate -z option
     "-z")
-    if [[ $argument != "asc" && $argument != "asc" && $argument != "shl" && $argument != "slh" ]]; then
+    if [[ $argument != "asc" && $argument != "dsc" && $argument != "shl" && $argument != "slh" ]]; then
         tput setaf 1
         echo "Invalid argument for -z option. Exiting..."
         tput sgr0
@@ -104,7 +104,7 @@ display_output() {
     done
 }
 
-#filter the files based on the size
+#filter files based on the size
 filter_by_size() {
     operator=$1
     bytes=$2
@@ -172,8 +172,7 @@ else
         display_output $argument
         ;;
     "-s")
-        files=$(ls /bin)
-       files=$(ls /bin)
+        files=$(ls /bin | grep -i $argument)
     if [ -z "$files" ]; then
         tput setaf 1
         echo "No matches found"
