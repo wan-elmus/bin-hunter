@@ -71,7 +71,9 @@ fi
 elif [[ $option == "-s" ]]; then
 binaries=$(echo "$binaries" | grep -i "$argument")
 if [[ -z $binaries ]]; then
+tput setaf 1
 echo "No matches found"
+tput sgr0
 exit 1
 fi
 elif [[ $option == "-b" ]]; then

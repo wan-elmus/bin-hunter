@@ -2,6 +2,7 @@
 
 
 # Search and sort commands and utilities located in /bin directory
+
 <Student_name_and_number_are_included_because_it_was_one_of_the_requirements_for_the_script_have_tried_as_much_as_possible_to__mplement_everything_the_requirements_demand>
 
 This bash script takes in two input arguments. The first argument is an option and the second argument is an argument. The script first validates the input arguments to ensure that the correct number of arguments are provided, and that the option and argument are valid. If the arguments are invalid, the script exits. If the arguments are valid, the script performs different actions depending on the option provided. 
