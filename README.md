@@ -1,13 +1,14 @@
 ![alt text](img/binhunt.PNG)
 
-
 # Search and sort commands and utilities located in /bin directory
-<Student_name_and_number_are_included_because_it_was_one_of_the_requirements_for_the_script_have_tried_as_much_as_possible_to__mplement_everything_the_requirements_demand>
 
-This bash script takes in two input arguments. The first argument is an option and the second argument is an argument. The script first validates the input arguments to ensure that the correct number of arguments are provided, and that the option and argument are valid. If the arguments are invalid, the script exits. If the arguments are valid, the script performs different actions depending on the option provided. 
+<Student_name_and_number_are_included_because_it_was_one_of_the_requirements_for_the_script_,have_tried_as_much_as_possible_to_implement_everything_the_requirements_demand>
+
+This bash script takes in two input arguments. The first argument is an option and the second argument is an argument. The script first validates the input arguments to ensure that the correct number of arguments are provided, and that the option and argument are valid. If the arguments are invalid, the script exits. If the arguments are valid, the script performs different actions depending on the option provided.
+
 The options are:
 
-"-z": sorts and displays the binary files in the /bin directory based on the argument provided (ASC, DSC, SHL, or SLH) and shows the name and size of the files in a columnar format.
+"-z": sorts and displays the binary files in the /bin directory based on the argument provided (ASC, DSC, SHL, or SLH - case insensitive) and shows the name and size of the files in a columnar format.
 
 "-s": searches for and displays the binary files in the /bin directory that match the argument provided (case-insensitive) and shows the name and size of the files in a columnar format.
 
@@ -19,16 +20,16 @@ If invalid arguments are provided, it displays an error message and exits.
 
 ## How to run the Script with different arguments
 
-*Sorting in ascending order: "./scriptname.sh -z ASC" or "bash scriptname.sh -z ASC"*
+*Sorting in ascending order: "./searchbin.sh -z ASC" or "bash searchbin.sh -z ASC"* <case-insensitive>
 
-*Sorting in descending order: "./scriptname.sh -z DSC" or "bash scriptname.sh -z DSC"*
+*Sorting in descending order: "./searchbin.sh -z DSC" or "bash searchbin.sh -z DSC"* <case-insensitive>
 
-*Sorting by size in descending order: "./scriptname.sh -z SHL" or "bash scriptname.sh -z SHL"*
+*Sorting by size in descending order: "./searchbin.sh -z SHL" or "bash searchbin.sh -z SHL"* <case-insensitive>
 
-*Sorting by size in ascending order: "./scriptname.sh -z SLH" or "bash scriptname.sh -z SLH"*
+*Sorting by size in ascending order: "./searchbin.sh -z SLH" or "bash searchbin.sh -z SLH"*
 
-*Searching for files containing a specific string: "./scriptname.sh -s <string>" or "bash scriptname.sh -s <string>"*
+*Searching for files containing a specific string: "./searchbin.sh -s <string>" or "bash searchbin.sh -s <string>"*
 
-*Sorting by file size based on a specific operator and bytes: "./scriptname.sh -b <operator,bytes>" or "bash scriptname.sh -b <operator,bytes>"*
+*Sorting by file size based on a specific operator and bytes: "./searchbin.sh -b <operator,bytes>" or "bash searchbin.sh -b <operator,bytes>"*
 
-*Displaying the full listing of /bin directory: "./scriptname.sh" or "bash scriptname.sh"*
+*Displaying the full listing of /bin directory: "./searchbin.sh" or "bash searchbin.sh"*
