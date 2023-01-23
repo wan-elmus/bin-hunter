@@ -15,19 +15,20 @@ validate_args() {
     fi
 
     #Store option and argument in variables
-    option=$(echo $1 | tr '[:upper:]' '[:lower:]')
+    option=$1
     argument=$(echo $2 | tr '[:upper:]' '[:lower:]')
 
     case $option in
-    # Validate -z option
+     # Validate -z option
     "-z")
     if [[ $argument != "asc" && $argument != "dsc" && $argument != "shl" && $argument != "slh" ]]; then
+    # if [[ ! $argument =~ ^(asc|dsc|shl|slh)$ ]]; then
         tput setaf 1
         echo "Invalid argument for -z option. Exiting..."
         tput sgr0
         exit 1
     fi
-    ;;
+;;
     # Validate -s option
     "-s")
     if [[ -z $argument ]]; then
@@ -39,7 +40,8 @@ validate_args() {
     ;;
     # Validate -b option
     "-b")
-    operator=${argument%,*}
+    #operator=${argument%,*}
+    operator=$(echo ${argument%,*} | tr '[:upper:]' '[:lower:]')
     bytes=${argument#*,}
     if [[ -z $operator || -z $bytes ]]; then
         tput setaf 1
@@ -48,13 +50,14 @@ validate_args() {
         exit 1
     fi
     case $operator in
-    "gt") operator=">";;
-    "lt") operator="<";;
-    "le") operator="<=";;
-    "ge") operator=">=";;
-    "eq") operator="==";;
-    "ne") operator="!=";;
+    "gt"|"GT") operator=">";;
+    "lt"|"LT") operator="<";;
+    "le"|"LE") operator="<=";;
+    "ge"|"GE") operator=">=";;
+    "eq"|"EQ") operator="==";;
+    "ne"|"NE") operator="!=";;
     *)
+
     tput setaf 1
     echo "Invalid operator for -b option. Exiting..."
     tput sgr0
@@ -78,16 +81,20 @@ print_header() {
 #Function to sort and display the output
 display_output() {
 
+    option=$1
+    argument=$(echo $2 | tr '[:upper:]' '[:lower:]')
+
     #Get the list of files in /bin directory
     files=$(ls /bin)
 
     #Sort the files based on the option provided
-    case $1 in
-    "asc") files=$(echo "$files" | sort -f);;
-    "dsc") files=$(echo "$files" | sort -rf);;
-    "shl") files=$(ls -S /bin);;
-    "slh") files=$(ls -s /bin);;
+    case $argument in
+    "asc"|"ASC") files=$(echo "$files" | sort -f);;
+    "dsc"|"DSC") files=$(echo "$files" | sort -rf);;
+    "shl"|"SHL") files=$(ls -S /bin);;
+    "slh"|"SLH") files=$(ls -s /bin);;
     esac
+
     print_header
     #Display the files in columnar format
     for file in $files; do
@@ -104,9 +111,11 @@ display_output() {
     done
 }
 
+
 #filter files based on the size
 filter_by_size() {
-    operator=$1
+    #operator=$1
+    operator=$(echo ${argument%,*} | tr '[:upper:]' '[:lower:]')
     bytes=$2
 
     # Convert bytes to the correct format for the -size option
@@ -121,17 +130,26 @@ filter_by_size() {
     fi
 
     files=$(find /bin -type f -printf "%s %p\n" | awk '{if( $1 '"$operator $bytes"') print $2}')
+    # files=$(find /bin -type f -printf "%s %p\n" | awk "{if( \$1 $operator $bytes ) print \$2}")
 
-    
     if [ -z "$files" ]; then
         tput setaf 1
         echo "No matches found"
         tput sgr0
         exit 0
     fi
-        for file in $files; do
+    print_header
+    for file in $files; do
         size=$(stat -c%s "$file")
-        printf "%-20s %20d\n" $(basename $file) $size
+        if [[ $size -lt 1000 ]]; then
+                printf "%-20s %20db\n" $(basename $file) $size
+        elif [[ $size -ge 1000000 ]]; then
+                size=$(echo "scale=2; $size/1000000" | bc)
+                printf "%-20s %20.2fMb\n" $(basename $file) $size
+        else
+                size=$(echo "scale=2; $size/1000" | bc)
+                printf "%-20s %20.2fkb\n" $(basename $file)  $size
+        fi
     done
 }
 
@@ -153,7 +171,6 @@ list_alphabetically() {
     done
 }
 
-
 #Main script
 if [ $# -eq 0 ]; then
 #If no argument is provided, display the full listing of /bin directory
@@ -162,7 +179,8 @@ else
     validate_args $1 $2
 
     option=$1
-    argument=$2
+    # argument=$2
+    argument=$(echo $2 | tr '[:upper:]' '[:lower:]')
 
     case $option in
     "-z")

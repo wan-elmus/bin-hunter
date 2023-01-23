@@ -75,7 +75,7 @@ esac
 display_output() {
 
 #Get the list of files in /bin directory
-files=$(ls /bin)
+files=$(ls /bin | grep -i $argument)
 
 #Sort the files based on the option provided
 case $1 in
@@ -105,7 +105,7 @@ done
 filter_by_size() {
     operator=$1
     bytes=$2
-    files=$(find /bin -type f -printf "%s %p\n" | awk '{if( $1 '"$operator $bytes"') print $2}')
+    files=$(find /bin -type f -printf "%s %p\n" | awk '{if( $1 '"$operator $bytes"') print $2}' | grep -i $argument)
 
     if [ -z "$files" ]; then
     tput setaf 1
@@ -158,38 +158,3 @@ tput setaf 1
   ;;
 esac
 fi
-
-# Function to print the header
-print_header() {
-    echo "NAME    SIZE"
-    echo "-------  -----"
-}
-
-#Function to sort and display the output
-display_output() {
-
-    #Get the list of files in /bin directory
-    files=$(ls /bin)
-
-    #Sort the files based on the option provided
-    case $1 in
-    "ASC") files=$(echo "$files" | sort -f);;
-    "DSC") files=$(echo "$files" | sort -rf);;
-    "SHL") files=$(ls -S /bin);;
-    "SLH") files=$(ls -s /bin);;
-    esac
-    print_header
-    #Display the files in columnar format
-    for file in $files; do
-        size=$(stat -c%s "/bin/$file")
-        if [[ $size -ge 1000000 ]]; then
-            size=$(echo "scale=2; $size/1000000" | bc)
-            printf "%-8s %7.2fMB\n" $file $size
-        elif [[ $size -ge 1000 ]]; then
-            size=$(echo "scale=2; $size/1000" | bc)
-            printf "%-8s %7.2fKB\n" $file $size
-        else
-            printf "%-8s %7d\n" $file $size
-        fi
-    done
-}
