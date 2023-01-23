@@ -1,89 +1,161 @@
 #!/bin/bash
 
-# Validate and store command line arguments
-while getopts ":z:s:b:" opt; do
-    case $opt in
-    z) order_type="$OPTARG" ;;
-    s) search_string="$OPTARG" ;;
-    b) operator_bytes="$OPTARG" ;;
-    \?) echo "Invalid option -$OPTARG. Exiting..." && exit 1 ;;
-    :) echo "Option -$OPTARG requires an argument. Exiting..." && exit 1 ;;
-    esac
+#Student name and number
+
+#validate the input arguments
+validate_args() {
+
+#Check if the correct number of arguments are provided
+if [ $# -ne 2 ]; then
+tput setaf 1
+echo "Please provide two arguments: option and argument. Exiting..."
+tput sgr0
+exit 1
+fi
+
+#Store option and argument in variables
+option=$1
+argument=$2
+
+case $option in
+# Validate -z option
+"-z")
+if [[ $argument != "ASC" && $argument != "DSC" && $argument != "SHL" && $argument != "SLH" ]]; then
+tput setaf 1
+echo "Invalid argument for -z option. Exiting..."
+tput sgr0
+exit 1
+fi
+;;
+# Validate -s option
+"-s")
+if [[ -z $argument ]]; then
+tput setaf 1
+echo "Invalid argument for -s option. Exiting..."
+tput sgr0
+exit 1
+fi
+;;
+# Validate -b option
+"-b")
+operator=${argument%,*}
+bytes=${argument#*,}
+if [[ -z $operator || -z $bytes ]]; then
+tput setaf 1
+echo "Invalid argument for -b option. Exiting..."
+tput sgr0
+exit 1
+fi
+case $operator in
+"GT") operator=">";;
+"LT") operator="<";;
+"LE") operator="<=";;
+"GE") operator=">=";;
+"EQ") operator="==";;
+"NE") operator="!=";;
+*)
+tput setaf 1
+echo "Invalid operator for -b option. Exiting..."
+tput sgr0
+exit 1
+;;
+esac
+;;
+*)
+tput setaf 1
+echo "Invalid option. Exiting..."
+tput sgr0
+exit 1
+;;
+esac
+}
+
+#Function to sort and display the output
+display_output() {
+
+#Get the list of files in /bin directory
+files=$(ls /bin)
+
+#Sort the files based on the option provided
+case $1 in
+"ASC") files=$(echo "$files" | sort -f);;
+"DSC") files=$(echo "$files" | sort -rf);;
+"SHL") files=$(ls -S /bin);;
+"SLH") files=$(ls -Sr /bin);;
+esac
+
+#Display the files in columnar format
+echo "      Name                Size"
+echo "-------------------   -----------"
+for file in $files; do
+size=$(stat -c%s "/bin/$file")
+printf "%-20s %10d\n" $file $size
 done
+}
 
-# Check if multiple options were passed
-if [[ ! -z $order_type && ! -z $search_string ]] || [[ ! -z $order_type && ! -z $operator_bytes ]] || [[ ! -z $search_string && ! -z $operator_bytes ]]; then
-    echo "Please provide only one option at a time. Exiting..." && exit 1
-fi
+#filter the files based on the size
+filter_by_size() {
+    operator=$1
+    bytes=$2
+    # files=$(find /bin -type f -printf "%s %p\n" | awk '{if( $1 '"$operator $bytes"') print $2}')
+    files=$(stat -c "%s %n" /bin/* | awk '{if($1 '"$operator $bytes"') print $2}')
 
-# Validate order type argument
-if [[ ! -z $order_type ]]; then
-    if [[ $order_type != "ASC" && $order_type != "DSC" && $order_type != "SHL" && $order_type != "SLH" ]]; then
-    echo "Invalid order type $order_type passed. Exiting..." && exit 1
+    if [ -z "$files" ]; then
+    tput setaf 1
+    echo "No matches found"
+    tput sgr0
+    exit 0
     fi
-fi
+    echo "      Name                Size"
+    echo "-------------------   -----------"
+    for file in $files; do
+    size=$(stat -c%s "$file")
+    printf "%-20s %10d\n" $(basename $file) $size
+    done
+}
 
-# Validate search string argument
-if [[ ! -z $search_string ]]; then
-    if [[ ! $search_string =~ ^[A-Za-z0-9]+$ ]]; then
-    echo "Invalid search string $search_string passed. Exiting..." && exit 1
-    fi
-fi
+#Main script
+if [ $# -eq 0 ]; then
 
-# Validate operator and bytes argument
-if [[ ! -z $operator_bytes ]]; then
-    if [[ ! $operator_bytes =~ ^[A-Za-z]{2},[0-9]+$ ]]; then
-    echo "Invalid operator and bytes $operator_bytes passed. Exiting..." && exit 1
-    fi
-fi
+#If no argument is provided, display the full listing of /bin directory
+ls /bin
+else
+validate_args $1 $2
 
-# Get a listing of the /bin directory
-listing=$(ls -l /bin)
+option=$1
+argument=$2
 
-# Check if listing was successful
-if [[ $? -ne 0 ]]; then
-    echo "Failed to get listing of /bin directory. Exiting..." && exit 1
-fi
-
-# Filter listing based on search string
-if [[ ! -z $search_string ]]; then
-    listing=$(echo "$listing" | grep -i "$search_string")
-fi
-
-# Check if any matches were found
-if [[ -z $listing ]]; then
-    echo "No matches found. Exiting..." && exit 0
-fi
-
-# Filter listing based on operator and bytes
-if [[ ! -z $operator_bytes ]]; then
-    operator=$(echo "$operator_bytes" | cut -d, -f1)
-    bytes=$(echo "$operator_bytes" | cut -d, -f2)
-    case $operator in
-    GT) listing=$(echo "$listing" | awk '$5 > '$bytes'') ;;
-    LT) listing=$(echo "$listing" | awk '$5 < '$bytes'') ;;
-    LE) listing=$(echo "$listing" | awk '$5 <= '$bytes'') ;;
-    GE) listing=$(echo "$listing" | awk '$5 >= '$bytes'') ;;
-    EQ) listing=$(echo "$listing" | awk '$5 == '$bytes'') ;;
-    NE) listing=$(echo "$listing" | awk '$5 != '$bytes'') ;;
+case $option in
+"-z")
+  display_output $argument
+  ;;
+"-s")
+  files=$(ls /bin | grep -i $argument)
+  if [ -z "$files" ]; then
+  tput setaf 1
+    echo "No matches found"
+    tput sgr0
+    exit 0
+  fi
+  echo "      Name                Size"
+  echo "-------------------   -----------"
+for file in $files; do
+size=$(stat -c%s "/bin/$file")
+printf "%-20s %10d\n" $file $size
+done
+  ;;
+"-b")
+  filter_by_size $operator $bytes
+  ;;
+*)
+tput setaf 1
+  echo "Invalid option. Exiting..."
+  tput sgr0
+  exit 1
+  ;;
 esac
 fi
 
-Sort listing based on order type
-if [[ ! -z $order_type ]]; then
-case $order_type in
-ASC) listing=$(echo "$listing" | sort -k5,5n) ;;
-DSC) listing=$(echo "$listing" | sort -k5,5nr) ;;
-SHL) listing=$(echo "$listing" | sort -k9) ;;
-SLH) listing=$(echo "$listing" | sort -k9r) ;;
-esac
-fi
-
-Print final listing
-echo "$listing"
-
-Exit successfully
-exit 0
 
 
 

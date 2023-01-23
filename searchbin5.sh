@@ -10,35 +10,39 @@ validate_args() {
         tput setaf 1
         echo "Invalid flag or missing argument error - exiting.."
         tput sgr0
-    exit 1
+        exit 1
     fi
 
     #Store option and argument in variables
+    #option=$1
     option=$(echo $1 | tr '[:upper:]' '[:lower:]')
+    # argument=$2
     argument=$(echo $2 | tr '[:upper:]' '[:lower:]')
+    
 
     case $option in
-    # Validate -z option
-    "-z")
-    if [[ $argument != "asc" && $argument != "dsc" && $argument != "shl" && $argument != "slh" ]]; then
-        tput setaf 1
-        echo "Invalid sort by argument. Exiting..."
-        tput sgr0
-        exit 1
-    fi
-    ;;
-    # Validate -s option
-    "-s")
-    if [[ -z $argument ]]; then
-        tput setaf 1
-        echo "Invalid sort by argument. Exiting..."
-        tput sgr0
-        exit 1
-    fi
-    ;;
-    # Validate -b option
-    "-b")
-    operator=$(echo ${argument%,*} | tr '[:upper:]' '[:lower:]')
+        # Validate -z option
+        "-z")
+            if [[ $argument != "asc" && $argument != "dsc" && $argument != "shl" && $argument != "slh" ]]; then
+                tput setaf 1
+                echo "Invalid sort by argument. Exiting..."
+                tput sgr0
+                exit 1
+            fi
+            ;;
+
+        # Validate -s option
+        "-s")
+            if [[ -z $argument ]]; then
+                tput setaf 1
+                echo "Invalid sort by argument. Exiting..."
+                tput sgr0
+                exit 1
+            fi
+            ;;
+        # Validate -b option
+        "-b")
+            operator=$(echo ${argument%,*} | tr '[:upper:]' '[:lower:]')
             bytes=${argument#*,}
             if [[ -z $operator || -z $bytes ]]; then
                 tput setaf 1
@@ -69,6 +73,7 @@ validate_args() {
             ;;
     esac
 }
+
 # Function to print the header
 print_header() {
     printf "%-20s %22s\n" "NAME" "SIZE"
@@ -76,18 +81,18 @@ print_header() {
 
 #Function to sort and display the output
 display_output() {
-    argument=$(echo $1 | tr '[:upper:]' '[:lower:]')
 
     #Get the list of files in /bin directory
     files=$(ls /bin)
 
     #Sort the files based on the option provided
     case $1 in
-    "asc" | "ASC") files=$(echo "$files" | sort -f);;
-    "dsc" | "DSC") files=$(echo "$files" | sort -rf);;
-    "shl" | "SHL") files=$(ls -S /bin);;
-    "slh" | "SLH") files=$(ls -Sr /bin);;
+    "asc") files=$(echo "$files" | sort -f);;
+    "dsc") files=$(echo "$files" | sort -rf);;
+    "shl") files=$(ls -S /bin);;
+    "slh") files=$(ls -Sr /bin);;
     esac
+
     print_header
     #Display the files in columnar format
     for file in $files; do
@@ -103,8 +108,7 @@ display_output() {
         fi
     done
 }
-
-#filter files based on the size
+#filter the files based on the size
 filter_by_size() {
     operator=$1
     bytes=$2
@@ -131,6 +135,7 @@ filter_by_size() {
         fi
     done
 }
+
 #list the utilities and commands in /bin directory alphabetically
 list_alphabetically() {
     files=$(ls /bin | sort -f)
@@ -151,19 +156,20 @@ list_alphabetically() {
 
 #Main script
 if [ $# -eq 0 ]; then
+
 #If no argument is provided, display the full listing of /bin directory
-    list_alphabetically
+list_alphabetically
 else
-    validate_args $1 $2
+validate_args $1 $2
 
-    option=$1
-    argument=$2
+option=$1
+argument=$2
 
-    case $option in
-    "-z")
-        display_output $argument
-        ;;
-    "-s")
+case $option in
+"-z")
+  display_output $argument
+  ;;
+"-s")
         files=$(ls /bin | grep -i $argument)
     if [ -z "$files" ]; then
         tput setaf 1
@@ -185,11 +191,11 @@ else
             fi
         done
         ;;
-    "-b")
-        filter_by_size $operator $bytes
+"-b")
+  filter_by_size $operator $bytes
   ;;
 *)
-  tput setaf 1
+tput setaf 1
   echo "Invalid option. Exiting..."
   tput sgr0
   exit 1

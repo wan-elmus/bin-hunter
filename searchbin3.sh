@@ -2,112 +2,222 @@
 
 #Student name and number
 
-#validate input arguments
+#validate the input arguments
+
 validate_args() {
-if [[ $1 == "-z" ]]; then
-if [[ $2 == "ASC" || $2 == "DSC" || $2 == "SHL" || $2 == "SLH" ]]; then
-return 0
-else
-tput setaf 1
-echo "Invalid argument passed for option -z. Exiting..."
-tput sgr0
-exit 1
-fi
-elif [[ $1 == "-s" ]]; then
-if [[ -n $2 ]]; then
-return 0
-else
-tput setaf 1
-echo "No argument passed for option -s. Exiting..."
-tput sgr0
-exit 1
-fi
-elif [[ $1 == "-b" ]]; then
-if [[ $2 =~ ^(GT|LT|LE|GE|EQ|NE),[0-9]+$ ]]; then
-return 0
-else
-tput setaf 1
-echo "Invalid argument passed for option -b. Exiting..."
-tput sgr0
-exit 1
-fi
-else
-tput setaf 1
-echo "Invalid option passed. Exiting..."
-tput sgr0
-exit 1
-fi
+
+#Check if the correct number of arguments are provided
+    if [ $# -ne 2 ]; then
+        tput setaf 1
+        echo "Invalid flag or missing argument error - exiting.."
+        tput sgr0
+    exit 1
+    fi
+
+    #Store option and argument in variables
+    option=$1
+    argument=$(echo $2 | tr '[:upper:]' '[:lower:]')
+
+    case $option in
+     # Validate -z option
+    "-z")
+    if [[ $argument != "asc" && $argument != "dsc" && $argument != "shl" && $argument != "slh" ]]; then
+    # if [[ ! $argument =~ ^(asc|dsc|shl|slh)$ ]]; then
+        tput setaf 1
+        echo "Invalid argument for -z option. Exiting..."
+        tput sgr0
+        exit 1
+    fi
+;;
+    # Validate -s option
+    "-s")
+    if [[ -z $argument ]]; then
+        tput setaf 1
+        echo "Invalid argument for -s option. Exiting..."
+        tput sgr0
+        exit 1
+    fi
+    ;;
+    # Validate -b option
+    "-b")
+    #operator=${argument%,*}
+    operator=$(echo ${argument%,*} | tr '[:upper:]' '[:lower:]')
+    bytes=${argument#*,}
+    if [[ -z $operator || -z $bytes ]]; then
+        tput setaf 1
+        echo "Invalid argument for -b option. Exiting..."
+        tput sgr0
+        exit 1
+    fi
+    case $operator in
+    "gt"|"GT") operator=">";;
+    "lt"|"LT") operator="<";;
+    "le"|"LE") operator="<=";;
+    "ge"|"GE") operator=">=";;
+    "eq"|"EQ") operator="==";;
+    "ne"|"NE") operator="!=";;
+    *)
+
+    tput setaf 1
+    echo "Invalid operator for -b option. Exiting..."
+    tput sgr0
+    exit 1
+    ;;
+    esac
+    ;;
+    *)
+    tput setaf 1
+    echo "Invalid option. Exiting..."
+    tput sgr0
+    exit 1
+    ;;
+    esac
+}
+# Function to print the header
+print_header() {
+    printf "%-20s %23s\n" "NAME" "SIZE"
+} 
+
+#Function to sort and display the output
+display_output() {
+
+    option=$1
+    argument=$(echo $2 | tr '[:upper:]' '[:lower:]')
+
+    #Get the list of files in /bin directory
+    files=$(ls /bin)
+
+    #Sort the files based on the option provided
+    case $argument in
+    "asc"|"ASC") files=$(echo "$files" | sort -f);;
+    "dsc"|"DSC") files=$(echo "$files" | sort -rf);;
+    "shl"|"SHL") files=$(ls -S /bin);;
+    "slh"|"SLH") files=$(ls -s /bin);;
+    esac
+
+    print_header
+    #Display the files in columnar format
+    for file in $files; do
+        size=$(stat -c%s "/bin/$file")
+        if [[ $size -lt 1000 ]]; then
+                printf "%-20s %20db\n" $file $size
+        elif [[ $size -ge 1000000 ]]; then
+                size=$(echo "scale=2; $size/1000000" | bc)
+                printf "%-20s %20.2fMb\n" $file $size
+        else
+                size=$(echo "scale=2; $size/1000" | bc)
+                printf "%-20s %20.2fkb\n" $file  $size
+        fi
+    done
 }
 
-#Check if only one option/argument is provided
-if [ $# -gt 2 ]; then
-tput setaf 1
-echo "Please provide only one option/argument at a time. Exiting..."
-tput sgr0
-exit 1
-fi
 
-#Validate input arguments
-validate_args $1 $2
+#filter files based on the size
+filter_by_size() {
+    #operator=$1
+    operator=$(echo ${argument%,*} | tr '[:upper:]' '[:lower:]')
+    bytes=$2
 
-#Store option and argument in variables
-option=$1
-argument=$2
+    # Convert bytes to the correct format for the -size option
+    if [[ $bytes -lt 1000 ]]; then
+        size_format="c"
+    elif [[ $bytes -lt 1000000 ]]; then
+        bytes=$(echo "scale=2; $bytes/1000" | bc)
+        size_format="k"
+    else
+        bytes=$(echo "scale=2; $bytes/1000000" | bc)
+        size_format="M"
+    fi
 
-#Get all files in /bin directory and store in variable
-binaries=$(ls /bin)
+    files=$(find /bin -type f -printf "%s %p\n" | awk '{if( $1 '"$operator $bytes"') print $2}')
+    # files=$(find /bin -type f -printf "%s %p\n" | awk "{if( \$1 $operator $bytes ) print \$2}")
 
-#Sort/search based on option provided
-if [[ $option == "-z" ]]; then
-if [[ $argument == "ASC" ]]; then
-binaries=$(echo "$binaries" | sort)
-elif [[ $argument == "DSC" ]]; then
-binaries=$(echo "$binaries" | sort -r)
-elif [[ $argument == "SHL" ]]; then
-binaries=$(ls -S /bin)
-elif [[ $argument == "SLH" ]]; then
-binaries=$(ls -s /bin)
-fi
-elif [[ $option == "-s" ]]; then
-binaries=$(echo "$binaries" | grep -i "$argument")
-if [[ -z $binaries ]]; then
-echo "No matches found"
-exit 1
-fi
-elif [[ $option == "-b" ]]; then
-operator=$(echo "$argument" | cut -f1 -d,)
-bytes=$(echo "$argument" | cut -f2 -d,)
-for binary in $binaries; do
-binary_size=$(ls -s /bin/$binary | cut -f1 -d' ')
-if [[ $operator == "GT" && $binary_size -gt $bytes ]]; then
-sorted_binaries="$sorted_binaries $binary"
-elif [[ $operator == "LT" && $binary_size -lt $bytes ]]; then
-sorted_binaries="$sorted_binaries $binary"
-elif [[ $operator == "LE" && $binary_size -le $bytes ]]; then
-sorted_binaries="$sorted_binaries $binary"
-elif [[ $operator == "GE" && $binary_size -ge $bytes ]]; then
-sorted_binaries="$sorted_binaries $binary"
-elif [[ $operator == "EQ" && $binary_size -eq $bytes ]]; then
-sorted_binaries="$sorted_binaries $binary"
-elif [[ $operator == "NE" && $binary_size -ne $bytes ]]; then
-sorted_binaries="$sorted_binaries $binary"
-fi
-done
-binaries=$sorted_binaries
-if [[ -z $binaries ]]; then
-tput setaf 1
-echo "No matches found"
-tput sgr0
-exit 1
-fi
-fi
+    if [ -z "$files" ]; then
+        tput setaf 1
+        echo "No matches found"
+        tput sgr0
+        exit 0
+    fi
+    print_header
+    for file in $files; do
+        size=$(stat -c%s "$file")
+        if [[ $size -lt 1000 ]]; then
+                printf "%-20s %20db\n" $(basename $file) $size
+        elif [[ $size -ge 1000000 ]]; then
+                size=$(echo "scale=2; $size/1000000" | bc)
+                printf "%-20s %20.2fMb\n" $(basename $file) $size
+        else
+                size=$(echo "scale=2; $size/1000" | bc)
+                printf "%-20s %20.2fkb\n" $(basename $file)  $size
+        fi
+    done
+}
 
-#Print results in columnar format
-printf "%-20s %-10d\n" "Binary" "Size (bytes)"
-for binary in $binaries; do
-binary_size=$(ls -s /bin/$binary | cut -f1 -d' ')
-printf "%-20s %-10d\n" "$binary" "$binary_size"
-done
+#list the utilities and commands in /bin directory alphabetically
+list_alphabetically() {
+    files=$(ls /bin | sort -f)
+    print_header
+    for file in $files; do
+        size=$(stat -c%s "/bin/$file")
+        if [[ $size -lt 1000 ]]; then
+                printf "%-20s %20dfb\n" $file $size
+        elif [[ $size -ge 1000000 ]]; then
+                size=$(echo "scale=2; $size/1000000" | bc)
+                printf "%-20s %20.2fmb\n" $file $size
+        else
+                size=$(echo "scale=2; $size/1000" | bc)
+                printf "%-20s %20.2fkb\n" $file  $size
+        fi
+    done
+}
 
-#Exit script
-exit 0
+#Main script
+if [ $# -eq 0 ]; then
+#If no argument is provided, display the full listing of /bin directory
+    list_alphabetically
+else
+    validate_args $1 $2
+
+    option=$1
+    # argument=$2
+    argument=$(echo $2 | tr '[:upper:]' '[:lower:]')
+
+    case $option in
+    "-z")
+        display_output $argument
+        ;;
+    "-s")
+        files=$(ls /bin | grep -i $argument)
+    if [ -z "$files" ]; then
+        tput setaf 1
+        echo "No matches found"
+        tput sgr0
+        exit 0
+    fi
+        print_header
+        for file in $files; do
+            size=$(stat -c%s "/bin/$file")
+            if [[ $size -lt 1000 ]]; then
+                printf "%-20s %20d b\n" $file $size
+            elif [[ $size -ge 1000000 ]]; then
+                size=$(echo "scale=2; $size/1000000" | bc)
+                printf "%-20s %20.2fMb\n" $file $size
+            else
+                size=$(echo "scale=2; $size/1000" | bc)
+                printf "%-20s %20.2fkb\n" $file  $size
+            fi
+        done
+        ;;
+    "-b")
+        operator=${argument%,*}
+        bytes=${argument#*,}
+        filter_by_size $operator $bytes
+        ;;
+    *)
+        tput setaf 1
+        echo "Invalid option. Exiting..."
+        tput sgr0
+        exit 1
+        ;;
+    esac
+fi
