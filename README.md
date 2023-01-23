@@ -2,7 +2,9 @@
 
 # Search and sort commands and utilities located in /bin directory
 
-<Student_name_and_number_are_included_because_it_was_one_of_the_requirements_for_the_script_,have_tried_as_much_as_possible_to_implement_everything_the_requirements_demand>
+**Student name and number are included because it was one of the requirements for the script, I have tried as much as possible to implement everything the requirements stipulate**
+
+**Note: The numbered scripts output different results when some arguments are passed to it, they were my local version control so I don't mess with the script workflow**
 
 This bash script takes in two input arguments. The first argument is an option and the second argument is an argument. The script first validates the input arguments to ensure that the correct number of arguments are provided, and that the option and argument are valid. If the arguments are invalid, the script exits. If the arguments are valid, the script performs different actions depending on the option provided.
 
