@@ -3,7 +3,6 @@
 #Student name and number
 
 #validate the input arguments
-argument=`echo $2 | tr '[:upper:]' '[:lower:]'`
 validate_args() {
 
 #Check if the correct number of arguments are provided
@@ -75,29 +74,22 @@ esac
 display_output() {
 
 #Get the list of files in /bin directory
-files=$(ls /bin | grep -i $argument)
+files=$(ls /bin)
 
 #Sort the files based on the option provided
 case $1 in
 "ASC") files=$(echo "$files" | sort -f);;
 "DSC") files=$(echo "$files" | sort -rf);;
 "SHL") files=$(ls -S /bin);;
-"SLH") files=$(ls -s /bin);;
+"SLH") files=$(ls -Sr /bin);;
 esac
 
 #Display the files in columnar format
-echo "NAME            SIZE"
+echo "      Name                Size"
+echo "-------------------   -----------"
 for file in $files; do
-    size=$(stat -c%s "/bin/$file")
-    if [[ $size -ge 1000000 ]]; then
-        size=$(echo "scale=2; $size/1000000" | bc)
-        printf "%-20s %10.2fMB\n" $file $size
-    elif [[ $size -ge 1000 ]]; then
-        size=$(echo "scale=2; $size/1000" | bc)
-        printf "%-20s %10.2fKB\n" $file $size
-    else
-        printf "%-20s %10d\n" $file $size
-    fi
+size=$(stat -c%s "/bin/$file")
+printf "%-20s %10d\n" $file $size
 done
 }
 
@@ -105,7 +97,8 @@ done
 filter_by_size() {
     operator=$1
     bytes=$2
-    files=$(find /bin -type f -printf "%s %p\n" | awk '{if( $1 '"$operator $bytes"') print $2}' | grep -i $argument)
+    # files=$(find /bin -type f -printf "%s %p\n" | awk '{if( $1 '"$operator $bytes"') print $2}')
+    files=$(stat -c "%s %n" /bin/* | awk '{if($1 '"$operator $bytes"') print $2}')
 
     if [ -z "$files" ]; then
     tput setaf 1
@@ -113,6 +106,8 @@ filter_by_size() {
     tput sgr0
     exit 0
     fi
+    echo "      Name                Size"
+    echo "-------------------   -----------"
     for file in $files; do
     size=$(stat -c%s "$file")
     printf "%-20s %10d\n" $(basename $file) $size
@@ -142,10 +137,12 @@ case $option in
     tput sgr0
     exit 0
   fi
-  for file in $files; do
-    size=$(stat -c%s "/bin/$file")
-    printf "%-20s %10d\n" "$file" "$size"
-  done
+  echo "      Name                Size"
+  echo "-------------------   -----------"
+for file in $files; do
+size=$(stat -c%s "/bin/$file")
+printf "%-20s %10d\n" $file $size
+done
   ;;
 "-b")
   filter_by_size $operator $bytes
@@ -158,3 +155,7 @@ tput setaf 1
   ;;
 esac
 fi
+
+
+
+

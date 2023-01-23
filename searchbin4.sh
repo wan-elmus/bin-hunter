@@ -8,7 +8,7 @@ validate_args() {
 #Check if the correct number of arguments are provided
 if [ $# -ne 2 ]; then
 tput setaf 1
-echo "Please provide two arguments: option and argument. Exiting..."
+echo "Invalid flag or missing argument error - exiting.."
 tput sgr0
 exit 1
 fi
@@ -70,29 +70,40 @@ exit 1
 esac
 }
 
+# Function to print the header
+print_header() {
+    printf "%-20s %23s\n" "NAME" "SIZE"
+} 
+
 #Function to sort and display the output
 display_output() {
 
-#Get the list of files in /bin directory
-files=$(ls /bin)
+    #Get the list of files in /bin directory
+    files=$(ls /bin)
 
-#Sort the files based on the option provided
-case $1 in
-"ASC") files=$(echo "$files" | sort -f);;
-"DSC") files=$(echo "$files" | sort -rf);;
-"SHL") files=$(ls -S /bin);;
-"SLH") files=$(ls -s /bin);;
-esac
+    #Sort the files based on the option provided
+    case $1 in
+    "ASC") files=$(echo "$files" | sort -f);;
+    "DSC") files=$(echo "$files" | sort -rf);;
+    "SHL") files=$(ls -S /bin);;
+    "SLH") files=$(ls -Sr /bin);;
+    esac
 
-#Display the files in columnar format
-echo "Binary Name Binary Size"
-echo "------------------- -----------"
-for file in $files; do
-size=$(stat -c%s "/bin/$file")
-printf "%-20s %10d\n" $file $size
-done
+    print_header
+    #Display the files in columnar format
+    for file in $files; do
+        size=$(stat -c%s "/bin/$file")
+        if [[ $size -lt 1000 ]]; then
+                printf "%-20s %20db\n" $file $size
+        elif [[ $size -ge 1000000 ]]; then
+                size=$(echo "scale=2; $size/1000000" | bc)
+                printf "%-20s %20.2fMb\n" $file $size
+        else
+                size=$(echo "scale=2; $size/1000" | bc)
+                printf "%-20s %20.2fkb\n" $file  $size
+        fi
+    done
 }
-
 #filter the files based on the size
 filter_by_size() {
     operator=$1
@@ -110,11 +121,29 @@ filter_by_size() {
     done
 }
 
+#list the utilities and commands in /bin directory alphabetically
+list_alphabetically() {
+    files=$(ls /bin | sort -f)
+    print_header
+    for file in $files; do
+        size=$(stat -c%s "/bin/$file")
+        if [[ $size -lt 1000 ]]; then
+                printf "%-20s %20dfb\n" $file $size
+        elif [[ $size -ge 1000000 ]]; then
+                size=$(echo "scale=2; $size/1000000" | bc)
+                printf "%-20s %20.2fmb\n" $file $size
+        else
+                size=$(echo "scale=2; $size/1000" | bc)
+                printf "%-20s %20.2fkb\n" $file  $size
+        fi
+    done
+}
+
 #Main script
 if [ $# -eq 0 ]; then
 
 #If no argument is provided, display the full listing of /bin directory
-ls /bin
+list_alphabetically
 else
 validate_args $1 $2
 
@@ -126,18 +155,27 @@ case $option in
   display_output $argument
   ;;
 "-s")
-  files=$(ls /bin | grep -i $argument)
-  if [ -z "$files" ]; then
-  tput setaf 1
-    echo "No matches found"
-    tput sgr0
-    exit 0
-  fi
-  for file in $files; do
-    size=$(stat -c%s "/bin/$file")
-    printf "%-20s %10d\n" "$file" "$size"
-  done
-  ;;
+        files=$(ls /bin | grep -i $argument)
+    if [ -z "$files" ]; then
+        tput setaf 1
+        echo "No matches found"
+        tput sgr0
+        exit 0
+    fi
+        print_header
+        for file in $files; do
+            size=$(stat -c%s "/bin/$file")
+            if [[ $size -lt 1000 ]]; then
+                printf "%-20s %20d b\n" $file $size
+            elif [[ $size -ge 1000000 ]]; then
+                size=$(echo "scale=2; $size/1000000" | bc)
+                printf "%-20s %20.2fMb\n" $file $size
+            else
+                size=$(echo "scale=2; $size/1000" | bc)
+                printf "%-20s %20.2fkb\n" $file  $size
+            fi
+        done
+        ;;
 "-b")
   filter_by_size $operator $bytes
   ;;
@@ -149,7 +187,3 @@ tput setaf 1
   ;;
 esac
 fi
-
-
-
-
