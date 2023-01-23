@@ -1,4 +1,4 @@
-![alt text](img/binhunt.PNG)
+![alt text](img/working_bin_hunter.PNG)
 
 # Search and sort commands and utilities located in /bin directory
 
