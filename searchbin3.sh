@@ -114,30 +114,17 @@ display_output() {
 
 #filter files based on the size
 filter_by_size() {
-    #operator=$1
-    operator=$(echo ${argument%,*} | tr '[:upper:]' '[:lower:]')
+    operator=$1
     bytes=$2
-
-    # Convert bytes to the correct format for the -size option
-    if [[ $bytes -lt 1000 ]]; then
-        size_format="c"
-    elif [[ $bytes -lt 1000000 ]]; then
-        bytes=$(echo "scale=2; $bytes/1000" | bc)
-        size_format="k"
-    else
-        bytes=$(echo "scale=2; $bytes/1000000" | bc)
-        size_format="M"
-    fi
-
-    files=$(find /bin -type f -printf "%s %p\n" | awk '{if( $1 '"$operator $bytes"') print $2}')
-    # files=$(find /bin -type f -printf "%s %p\n" | awk "{if( \$1 $operator $bytes ) print \$2}")
+    files=$(stat -c "%s %n" /bin/* | awk '{if($1 '"$operator $bytes"') print $2}')
 
     if [ -z "$files" ]; then
-        tput setaf 1
-        echo "No matches found"
-        tput sgr0
-        exit 0
+    tput setaf 1
+    echo "No matches found"
+    tput sgr0
+    exit 0
     fi
+    #Display output for -b option
     print_header
     for file in $files; do
         size=$(stat -c%s "$file")
@@ -173,7 +160,7 @@ list_alphabetically() {
 
 #Main script
 if [ $# -eq 0 ]; then
-#If no argument is provided, display the full listing of /bin directory
+#If no argument is provided, display the full listing of /bin directory in alphabetical order
     list_alphabetically
 else
     validate_args $1 $2
@@ -209,8 +196,6 @@ else
         done
         ;;
     "-b")
-        operator=${argument%,*}
-        bytes=${argument#*,}
         filter_by_size $operator $bytes
         ;;
     *)
