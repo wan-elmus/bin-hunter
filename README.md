@@ -28,7 +28,7 @@ Finally, the script will check if the passed argument is other than "-b" and if 
 
 The purpose of this code is to ensure that the option passed to the script is valid and in the correct format before continuing with the execution of the script.
 
-The code or rather the script uses a case statement to check the value of the operator passed as an argument after the "-b" option.vA case statement is a way to control the flow of a shell script by testing the value of a variable or expression against a list of patterns.
+The code or rather the script uses a case statement to check the value of the operator passed as an argument after the "-b" option.A case statement is a way to control the flow of a shell script by testing the value of a variable or expression against a list of patterns.
 
 In this specific case, the script is checking the value of the operator passed as an argument and mapping it to a corresponding operator in Bash syntax.
 
